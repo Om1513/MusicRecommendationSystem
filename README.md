@@ -8,6 +8,8 @@ Use these commands on your terminal
 git init
 git clone https://github.com/Om1513/MusicRecommendationSystem.git 
 
+# Install Node on your systems - Mac and Windows accordingly
+
 Requirements:
 NodeJS: npm install -g npm
 
