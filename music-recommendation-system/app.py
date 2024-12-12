@@ -21,6 +21,8 @@ def get_song_album_cover_url(song_name, artist_name):
 
     if results and results["tracks"]["items"]:
         track = results["tracks"]["items"][0]
+        print(track)
+        print("-------------------------------------------------")
         album_cover_url = track["album"]["images"][0]["url"]
         return album_cover_url
     else:
