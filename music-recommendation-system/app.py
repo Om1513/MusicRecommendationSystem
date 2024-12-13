@@ -9,6 +9,13 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 import re
+import pandas as pd
+from langdetect import detect
+import nltk
+from nltk.stem.porter import PorterStemmer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import pickle
 
 dotenv.load_dotenv()
 
@@ -131,6 +138,50 @@ def save_to_csv(data, filename="songs_with_lyrics.csv"):
     df = pd.DataFrame(data)
     df.to_csv(filename, index=False, encoding="utf-8")
     print(f"Data saved to {filename}")
+
+def generate_similarity_pickle(csv_path, similarity_pickle_path):
+    # Load the dataset
+    df = pd.read_csv(csv_path)
+
+    # Preprocess data
+    df['text'] = df['lyrics']
+    df.drop('lyrics', axis=1, inplace=True)
+
+    # Filter out rows with 'Lyrics not found.'
+    df = df[df['text'] != "Lyrics not found."].reset_index(drop=True)
+
+    # Detect and keep only English text rows
+    df = df[df['text'].apply(lambda x: detect(x) == 'en')].reset_index(drop=True)
+
+    # Text preprocessing: lowercase and remove newline characters
+    df['text'] = df['text'].str.lower().replace(r'\n', '', regex=True)
+
+    # Tokenization and stemming
+    nltk.download('punkt')
+    stemmer = PorterStemmer()
+
+    def token(txt):
+        tokens = nltk.word_tokenize(txt)
+        stemmed_tokens = [stemmer.stem(word) for word in tokens]
+        return " ".join(stemmed_tokens)
+
+    df['text'] = df['text'].apply(token)
+
+    # Vectorization
+    tfid = TfidfVectorizer(analyzer='word', stop_words='english')
+    matrix = tfid.fit_transform(df['text'])
+
+    # Cosine similarity
+    similarity = cosine_similarity(matrix)
+
+    # Save similarity matrix to pickle file
+    with open(similarity_pickle_path, 'wb') as file:
+        pickle.dump(similarity, file)
+
+    print(f"Similarity pickle saved at {similarity_pickle_path}")
+
+    return similarity
+
 
 # Navigation state
 if "page" not in st.session_state:
@@ -258,38 +309,42 @@ elif st.session_state['page'] == "User Playlist":
         playlists = get_user_playlists()
         playlist_names = list(playlists.keys())
         selected_playlist = st.selectbox("Select a playlist to view recommendations", playlist_names)
-
+        sucess = False
         # Display selected playlist and its ID
         if selected_playlist:
             st.write(f"Selected Playlist: {selected_playlist}")
 
             # playlist_songs = get_playlist_tracks(playlists[selected_playlist])
-            # save_to_csv(playlist_songs, filename="playlist_songs_with_lyrics.csv")
-        music = pd.read_csv('cleaned_playlist_songs_with_lyrics.csv')
-        similarity = pickle.load(open('similarityplay.pkl', 'rb'))
+            # filename="playlist_songs_with_lyrics.csv"
+            # save_to_csv(playlist_songs, filename=filename)
+            # generate_similarity_pickle(filename, 'similarityplay.pkl')
+            # sucess = True
+        if True:
+            music = pd.read_csv('playlist_songs_with_lyrics.csv')
+            similarity = pickle.load(open('similarityplay.pkl', 'rb'))
 
-        st.subheader("Music Recommender")
+            st.subheader("Music Recommender")
 
-        music_list = music['song'].values
-        selected_song = st.selectbox(
-            "Type or select a song from the dropdown",
-            music_list
-        )
+            music_list = music['song'].values
+            selected_song = st.selectbox(
+                "Type or select a song from the dropdown",
+                music_list
+            )
 
-        if st.button('Show Recommendation'):
-            recommended_music_names, recommended_music_posters = recommend(selected_song)
-            col1, col2, col3, col4, col5 = st.columns(5)
-            for i, (col, name, poster) in enumerate(zip([col1, col2, col3, col4, col5], recommended_music_names, recommended_music_posters)):
-                with col:
-                    st.markdown(
-                        f"""
-                        <div class="song-container" id="song-{i}">
-                            <img class="song-poster" src="{poster}" alt="Poster">
-                            <p class="song-name">{name}</p>
-                        </div>
-                        """,
-                        unsafe_allow_html=True,
-                    )
+            if st.button('Show Recommendation'):
+                recommended_music_names, recommended_music_posters = recommend(selected_song)
+                col1, col2, col3, col4, col5 = st.columns(5)
+                for i, (col, name, poster) in enumerate(zip([col1, col2, col3, col4, col5], recommended_music_names, recommended_music_posters)):
+                    with col:
+                        st.markdown(
+                            f"""
+                            <div class="song-container" id="song-{i}">
+                                <img class="song-poster" src="{poster}" alt="Poster">
+                                <p class="song-name">{name}</p>
+                            </div>
+                            """,
+                            unsafe_allow_html=True,
+                        )
 
 elif st.session_state['page'] == "Documentation":
     st.header("Documentation")
