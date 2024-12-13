@@ -91,5 +91,5 @@ if __name__ == "__main__":
     playlist_songs = get_playlist_tracks(playlist_id)
     save_to_csv(playlist_songs, filename="playlist_songs_with_lyrics.csv")
 
-    liked_songs = get_liked_songs_with_lyrics()
-    save_to_csv(liked_songs, filename="liked_songs_with_lyrics.csv")
+    # liked_songs = get_liked_songs_with_lyrics()
+    # save_to_csv(liked_songs, filename="liked_songs_with_lyrics.csv")
