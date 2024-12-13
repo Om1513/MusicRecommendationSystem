@@ -208,7 +208,7 @@ st.markdown(
 )
 # Render the selected page
 if st.session_state['page'] == "Home":
-    st.header('Home - Music Recommendation System')
+    st.header('Music Recommendation System')
     music = pd.read_csv('spotify_millsongdata.csv')
     similarity = pickle.load(open('similarity.pkl', 'rb'))
 
