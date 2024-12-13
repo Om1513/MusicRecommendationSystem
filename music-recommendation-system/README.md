@@ -1,68 +1,165 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Music Recommendation System
 
-## Getting Started
+This repository contains a **Music Recommendation System** that integrates Spotify's API and Genius API to provide personalized music recommendations based on song lyrics and user playlists. The application is built using **Streamlit** for the front end and uses **machine learning models** for generating recommendations.
 
-First, run the development server:
+---
 
+## Features
+
+- **Spotify Integration**: Allows users to log in with their Spotify account, fetch their playlists, and recommend similar tracks.
+- **Lyrics Analysis**: Scrapes and analyzes lyrics using Genius API for better recommendation accuracy.
+- **Custom Recommendations**: Generates song recommendations using **TF-IDF vectorization** and **cosine similarity** on the lyrics.
+- **Hover Effects**: Adds an interactive hover and zoom-in effect for song posters and names.
+- **Scalable Backend**: Modular design to support additional features in the future.
+
+---
+
+## Technologies Used
+
+### Backend Technologies
+- **Python**: Core programming language.
+- **Spotipy**: Spotify API integration for fetching user playlists and track details.
+- **Genius API**: For fetching song lyrics.
+- **pandas**: Data manipulation and cleaning.
+- **nltk**: Tokenization and stemming for natural language processing.
+- **scikit-learn**: TF-IDF vectorization and cosine similarity calculations.
+- **langdetect**: Detects non-English lyrics.
+
+### Frontend Technologies
+- **Streamlit**: For creating an interactive web interface.
+- **HTML/CSS**: Embedded in Streamlit for enhanced styling (hover effects, navbar, etc.).
+
+---
+
+## Setup Instructions
+
+Follow these steps to set up and run the Music Recommendation System on your local machine:
+
+### 1. Clone the Repository
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+$ git clone https://github.com/Om1513/MusicRecommendationSystem.git
+$ cd music-recommendation-system
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Install Dependencies
+Ensure you have Python 3.8+ installed. Install the required dependencies:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+$ pip install -r requirements.txt
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Set Up Environment Variables
+Create a `.env` file in the root directory with the following keys:
 
-## Learn More
+```env
+SPOTIPY_CLIENT_ID=<your-spotify-client-id>
+SPOTIPY_CLIENT_SECRET=<your-spotify-client-secret>
+SPOTIPY_REDIRECT_URI=<your-redirect-uri>
+GENIUS_ACCESS_TOKEN=<your-genius-access-token>
+```
 
-To learn more about Next.js, take a look at the following resources:
+To obtain these credentials:
+- **Spotify API**: [Create a Spotify Developer App](https://developer.spotify.com/dashboard/).
+- **Genius API**: [Get an API Key](https://genius.com/api-clients).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 4. Prepare the Dataset (Optional)
+If you wish to use your own dataset, ensure it is a CSV file with the following structure:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| song       | artist         | lyrics          |
+|------------|----------------|-----------------|
+| Song Name  | Artist Name    | Song Lyrics     |
 
-## Deploy on Vercel
+Place the file in the root directory and update the file path in the `app.py` script.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 5. Run the Application
+Run the Streamlit application:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+$ streamlit run app.py
+```
 
+The application will be accessible in your browser at `http://localhost:8501`.
 
-# MusicRecommendationSystem
+---
 
-Local Setup:
-Open VS COde and in the new window click clone git repository and paste the link :https://github.com/Om1513/MusicRecommendationSystem.git
+## How It Works
 
-OR 
-Use these commands on your terminal
-git init
-git clone https://github.com/Om1513/MusicRecommendationSystem.git 
+1. **Spotify Login**: Users log in with their Spotify credentials to fetch playlists.
+2. **Lyrics Scraping**: The app retrieves song lyrics from Genius for playlist songs.
+3. **Preprocessing**:
+   - Removes non-English lyrics.
+   - Tokenizes and stems lyrics using NLTK.
+4. **Recommendation Model**:
+   - Uses TF-IDF vectorization to convert lyrics into numerical vectors.
+   - Calculates cosine similarity to find similar songs.
+5. **Interactive UI**:
+   - Displays recommended songs with hover effects for posters and names.
 
-# Install Node on your systems - Mac and Windows accordingly
+---
 
-Requirements:
-NodeJS: npm install -g npm
+## Folder Structure
 
+```plaintext
+Music-Recommendation-System/
+├── app.py                    # Main application script
+├── requirements.txt          # Required dependencies
+├── dataset.csv               # Initial dataset (optional)
+├── similarity.pkl            # Precomputed similarity matrix
+├── README.md                 # Project documentation
+├── .env                      # Environment variables
+```
 
-Libraries Used:
-Already installed:
-TailwindCSS 
-React
-TypeScript
+---
 
-Future Installation:
-GraphQL
-TypeORM
+## Customization
 
-PostgreSQL - Download the postgres lates version from https://www.postgresql.org/download/ 
-Download the admin and create an account (Integration will be done later)
+### Using a New Dataset
+Replace the `playlist_songs_with_lyrics.csv` file with your own dataset and update the file path in `app.py`. Run the following function to generate a new similarity matrix:
 
-POSTMAN API : Download POSTMAN API Desktop --> https://www.postman.com/downloads/
+```python
+from app import generate_similarity_pickle
+
+generate_similarity_pickle('your_dataset.csv', 'your_similarity.pkl')
+```
+
+Update the `similarity.pkl` file in your app.
+
+### Adding Features
+You can enhance the app by adding:
+- **Genre-Based Recommendations**: Use Spotify's track features like tempo, danceability, and energy.
+- **User Preferences**: Save user preferences for personalized results.
+
+---
+
+## Known Issues
+
+1. **Rate Limits**: Both Spotify and Genius APIs have rate limits. If you hit the limit, wait for some time before retrying.
+2. **Incomplete Data**: Some songs may not have lyrics available on Genius, which might lead to exclusions.
+
+---
+
+## Contribution Guidelines
+
+We welcome contributions! If you'd like to improve the project, please fork the repository and create a pull request.
+
+### Steps to Contribute:
+1. Fork the repository.
+2. Create a feature branch: `git checkout -b feature-name`.
+3. Commit your changes: `git commit -m "Added new feature"`.
+4. Push to the branch: `git push origin feature-name`.
+5. Open a pull request in the main repository.
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
+## Contact
+
+If you have any questions or suggestions, feel free to reach out at:
+- **Email**: [oss9762@nyu.edu](mailto:oss9762@nyu.edu)
+- **GitHub**: [https://github.com/Om1513](https://github.com/Om1513)
+
